@@ -1,0 +1,36 @@
+name: update submodules
+
+on:
+  workflow_dispatch:
+  schedule:
+  - cron:  '00 12 * * *'
+
+jobs:
+  submodules:
+    runs-on: ubuntu-latest
+
+    name: update submodules
+    steps:
+    - name: Check out the repo
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+    - name: update libreoffice
+      run: |
+         libre_version="$(
+          git ls-remote https://github.com/LibreTranslate/LibreTranslate v* \
+            | cut -d/ -f3 \
+            | sort -V \
+            | grep -E "^v[0-9\.]+$" \
+            | tail -1
+         )"
+         cd LibreTranslate
+         git checkout $libre_version
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        commit-message: submodules automated change
+        signoff: true
+        title: submodules update
+        body: Automated submodules update
+        branch: submodules-update
