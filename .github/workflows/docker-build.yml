@@ -7,7 +7,7 @@ on:
         description: "Tag name"
         required: true
         default: 'v1'
-        
+
 jobs:
   push_to_registry:
     runs-on: ubuntu-latest
@@ -17,16 +17,16 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Check out the libretranslate repo
         run: |
           set -ex
-          mkdir -p libretranslate
-          git clone https://github.com/LibreTranslate/LibreTranslate.git --branch v1.3.13 --depth 1 libretranslate
-          cp ./start.sh ./libretranslate/
-          echo "COPY --chmod=775 start.sh /start.sh" >> ./libretranslate/docker/Dockerfile
-          echo 'ENTRYPOINT ["/start.sh"]' >> ./libretranslate/docker/Dockerfile
-          cat ./libretranslate/docker/Dockerfile
+          cp start.sh LibreTranslate/start.sh
+          echo "COPY --chmod=775 start.sh /start.sh" | tee -a LibreTranslate/docker/Dockerfile
+          echo 'ENTRYPOINT ["/start.sh"]' | tee -a LibreTranslate/docker/Dockerfile
+          cat LibreTranslate/docker/Dockerfile
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -35,7 +35,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Login to DockerHub
-        uses: docker/login-action@v3 
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -45,8 +45,8 @@ jobs:
         with:
           push: true
           platforms: linux/amd64,linux/arm64
-          context: './libretranslate/'
+          context: 'LibreTranslate'
           no-cache: true
-          file: './libretranslate/docker/Dockerfile'
+          file: 'LibreTranslate/docker/Dockerfile'
           tags: szaimen/aio-libretranslate:${{ github.event.inputs.tagName }}
           provenance: false
