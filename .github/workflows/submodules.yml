@@ -8,7 +8,8 @@ on:
 jobs:
   submodules:
     runs-on: ubuntu-latest
-
+    outputs:
+      output1: ${{ steps.update.outputs.version }}
     name: update submodules
     steps:
     - name: Check out the repo
@@ -16,6 +17,7 @@ jobs:
       with:
         submodules: true
     - name: update libreoffice
+      id: update
       run: |
          libre_version="$(
           git ls-remote https://github.com/LibreTranslate/LibreTranslate v* \
@@ -27,11 +29,13 @@ jobs:
          cd LibreTranslate
          git fetch --unshallow
          git checkout $libre_version
+         echo "version=$libre_version" >> $GITHUB_OUTPUT
+
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v6
       with:
         commit-message: submodules automated change
         signoff: true
-        title: submodules update
+        title: submodules update to "${{needs.submodules.outputs.output1}}"
         body: Automated submodules update
         branch: submodules-update
