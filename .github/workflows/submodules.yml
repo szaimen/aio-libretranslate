@@ -28,7 +28,7 @@ jobs:
          git fetch --unshallow
          git checkout $libre_version
     - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v6
+      uses: peter-evans/create-pull-request@v7
       with:
         commit-message: submodules automated change
         signoff: true
